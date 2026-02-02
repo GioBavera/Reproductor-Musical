@@ -14,6 +14,9 @@ public partial class Form1 : MaterialForm
     private static float _volumenPersistente = 0.5f; // 50% por defecto
     private int _duracionTotalSegundos = 0;
 
+    // Tamaño CORRECTO y FIJO del formulario
+    private static readonly Size TAMANO_FORMULARIO = new Size(650, 800);
+
     public Form1()
     {
         InitializeComponent();
@@ -26,7 +29,7 @@ public partial class Form1 : MaterialForm
             MaterialSkin.Primary.Blue700,
             MaterialSkin.Primary.Blue900,
             MaterialSkin.Primary.Blue500,
-            MaterialSkin.Accent.Orange700,
+            MaterialSkin.Accent.Blue400,  // Cambiado de Orange700 a Blue400
             MaterialSkin.TextShade.BLACK
         );
 
@@ -35,20 +38,26 @@ public partial class Form1 : MaterialForm
         _timerProgreso.Tick += TimerProgreso_Tick;
 
         // Configurar controles
-        materialButton3.Text = "⏮";  // Skip backward
-        materialButton1.Text = "▶";   // Play
-        materialButton2.Text = "⏭";   // Skip forward
 
         // Establecer volumen persistente en el slider
         Volumen.Value = (int)(_volumenPersistente * 100);
 
+        // IMPORTANTE: Desactivar AutoSize de los labels para evitar que se redimensionen solos
+        lblTitulo.AutoSize = false;
+        lblArtistaAlbum.AutoSize = false;
+
         // Cargar imagen por defecto para la portada
         CargarPortadaPorDefecto();
+
+        // Inicializar labels de metadatos
+        lblTitulo.Text = "Reproductor FLAC";
+        lblArtistaAlbum.Text = "Abre un archivo para comenzar";
+        materialFloatingActionButton1.Icon = Reproductor.WinForm.Properties.Resources.play;
     }
 
     private void CargarPortadaPorDefecto()
     {
-        pictureBoxPortada.Image = Properties.Resources.Image_not_found;
+        pictureBoxPortada.Image = Reproductor.WinForm.Properties.Resources.Image_not_found;
     }
 
     private void ExtraerPortada(string rutaArchivo)
@@ -102,53 +111,6 @@ public partial class Form1 : MaterialForm
         lblTiempo.Text = $"{FormatearTiempo(posicionActual)} / {FormatearTiempo(_duracionTotalSegundos)}";
     }
 
-    private void materialButton1_Click(object sender, EventArgs e)
-    {
-        // Botón Play/Pause
-        if (_audioPlayer == null) return;
-
-        if (_estaReproduciendo)
-        {
-            _audioPlayer.Pause();
-            materialButton1.Text = "▶";
-            _estaReproduciendo = false;
-            _timerProgreso?.Stop();
-        }
-        else
-        {
-            _audioPlayer.Play();
-            materialButton1.Text = "⏸";
-            _estaReproduciendo = true;
-            _timerProgreso?.Start();
-        }
-    }
-
-    private void materialButton2_Click(object sender, EventArgs e)
-    {
-        // Skip forward +10 segundos
-        if (_audioPlayer != null)
-        {
-            int currentPos = _audioPlayer.GetCurrentPosition();
-            int newPos = Math.Min(materialProgressBar1.Maximum, currentPos + 10);
-            _audioPlayer.SetPosition(newPos);
-            materialProgressBar1.Value = newPos;
-            ActualizarTiempoDisplay(newPos);
-        }
-    }
-
-    private void materialButton3_Click(object sender, EventArgs e)
-    {
-        // Skip backward -10 segundos
-        if (_audioPlayer != null)
-        {
-            int currentPos = _audioPlayer.GetCurrentPosition();
-            int newPos = Math.Max(0, currentPos - 10);
-            _audioPlayer.SetPosition(newPos);
-            materialProgressBar1.Value = newPos;
-            ActualizarTiempoDisplay(newPos);
-        }
-    }
-
     private void materialProgressBar1_Click(object sender, EventArgs e)
     {
         // Click en barra de progreso para navegar
@@ -187,7 +149,10 @@ public partial class Form1 : MaterialForm
         if (ofd.ShowDialog() == DialogResult.OK)
         {
             _archivoActual = ofd.FileName;
-            this.Text = $"Reproductor FLAC - {System.IO.Path.GetFileName(_archivoActual)}";
+
+            // Restablecer labels mientras carga
+            lblTitulo.Text = "Cargando...";
+            lblArtistaAlbum.Text = "";
 
             CargarArchivo(_archivoActual);
 
@@ -201,20 +166,59 @@ public partial class Form1 : MaterialForm
         _audioPlayer?.Dispose();
 
         using var reader = new AudioFileReader(ruta);
-        
+
         _duracionTotalSegundos = (int)reader.TotalTime.TotalSeconds;
         materialProgressBar1.Maximum = _duracionTotalSegundos;
         materialProgressBar1.Value = 0;
 
-        _audioPlayer = new AudioPlayer(ruta, _volumenPersistente); // Pasar volumen al constructor
+        _audioPlayer = new AudioPlayer(ruta, _volumenPersistente);
 
-        // Resetear botón play
-        materialButton1.Text = "▶";
-        _estaReproduciendo = false;
-        _timerProgreso?.Stop();
+        // Extraer y mostrar metadatos en el título de la ventana
+        var metadatos = ExtraerMetadatos(ruta);
+        ActualizarTituloVentana(metadatos);
+
+        _audioPlayer.Play();
+        _estaReproduciendo = true;
+        _timerProgreso?.Start();
+        materialFloatingActionButton1.Icon = Reproductor.WinForm.Properties.Resources.pause;
 
         // Actualizar display de tiempo
         ActualizarTiempoDisplay(0);
+    }
+
+    private (string titulo, string artista, string album) ExtraerMetadatos(string rutaArchivo)
+    {
+        try
+        {
+            using var file = TagLib.File.Create(rutaArchivo);
+
+            string titulo = file.Tag.Title ?? System.IO.Path.GetFileNameWithoutExtension(rutaArchivo);
+            string artista = file.Tag.FirstAlbumArtist ?? file.Tag.FirstPerformer ?? "Desconocido";
+            string album = file.Tag.Album ?? "";
+
+            return (titulo, artista, album);
+        }
+        catch
+        {
+            return (System.IO.Path.GetFileNameWithoutExtension(rutaArchivo), "Desconocido", "");
+        }
+    }
+
+    private void ActualizarTituloVentana((string titulo, string artista, string album) metadatos)
+    {
+        this.Text = $"Reproductor de Musica";
+
+        // Actualizar labels en la interfaz
+        lblTitulo.Text = metadatos.titulo.ToUpper();
+
+        if (!string.IsNullOrEmpty(metadatos.album))
+        {
+            lblArtistaAlbum.Text = $"{metadatos.artista} - {metadatos.album}";
+        }
+        else
+        {
+            lblArtistaAlbum.Text = metadatos.artista;
+        }
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)
@@ -227,12 +231,37 @@ public partial class Form1 : MaterialForm
 
     private void Form1_Load(object sender, EventArgs e)
     {
+        // Forzar tamaño correcto
+        this.Size = TAMANO_FORMULARIO;
+
+        // Timer para verificar periódicamente que el tamaño no haya cambiado
+        var timerVerificador = new System.Windows.Forms.Timer { Interval = 100 };
+        timerVerificador.Tick += (s, args) =>
+        {
+            if (this.Size != TAMANO_FORMULARIO)
+            {
+                this.Size = TAMANO_FORMULARIO;
+            }
+        };
+        timerVerificador.Start();
+
         // Suscribir al evento de cambio de valor del slider
         // MaterialSlider no tiene evento directo, usamos MouseUp
         Volumen.MouseUp += (s, args) => Volumen_ValueChanged(Volumen, EventArgs.Empty);
 
         // Inicializar label de tiempo
         ActualizarTiempoDisplay(0);
+    }
+
+    // Override de OnResize para prevenir cambios
+    protected override void OnResize(EventArgs e)
+    {
+        if (this.Size != TAMANO_FORMULARIO)
+        {
+            this.Size = TAMANO_FORMULARIO;
+            return; // No llamar al base para evitar que se procese el resize
+        }
+        base.OnResize(e);
     }
 
     private void volumeMeter2_Click(object sender, EventArgs e)
@@ -243,6 +272,67 @@ public partial class Form1 : MaterialForm
     private void btnAbrir_Click(object sender, EventArgs e)
     {
         AbrirArchivo();
+    }
+
+    // Play/Pause button
+    private void materialFloatingActionButton1_Click_1(object sender, EventArgs e)
+    {
+        if (_audioPlayer == null) return;
+
+        if (_estaReproduciendo)
+        {
+            _audioPlayer.Pause();
+            _estaReproduciendo = false;
+            _timerProgreso?.Stop();
+            materialFloatingActionButton1.Icon = Reproductor.WinForm.Properties.Resources.play;  // CAMBIADO a play
+        }
+        else
+        {
+            _audioPlayer.Play();
+            _estaReproduciendo = true;
+            _timerProgreso?.Start();
+            materialFloatingActionButton1.Icon = Reproductor.WinForm.Properties.Resources.pause;  // CAMBIADO a pause
+        }
+    }
+
+    // Next button
+    private void pictureBox1_Click(object sender, EventArgs e)
+    {
+        // Futura Implementacion.
+    }
+
+    // Previous button
+    private void pictureBox2_Click(object sender, EventArgs e)
+    {
+        // Futura Implementacion.
+    }
+
+    // Forward +10 buttom
+    private void pictureBox4_Click(object sender, EventArgs e)
+    {
+        // Skip backward -10 segundos
+        if (_audioPlayer != null)
+        {
+            int currentPos = _audioPlayer.GetCurrentPosition();
+            int newPos = Math.Max(0, currentPos - 10);
+            _audioPlayer.SetPosition(newPos);
+            materialProgressBar1.Value = newPos;
+            ActualizarTiempoDisplay(newPos);
+        }
+    }
+
+    // Replay -10 buttom
+    private void pictureBox3_Click(object sender, EventArgs e)
+    {
+        // Skip forward +10 segundos
+        if (_audioPlayer != null)
+        {
+            int currentPos = _audioPlayer.GetCurrentPosition();
+            int newPos = Math.Min(materialProgressBar1.Maximum, currentPos + 10);
+            _audioPlayer.SetPosition(newPos);
+            materialProgressBar1.Value = newPos;
+            ActualizarTiempoDisplay(newPos);
+        }
     }
 }
 

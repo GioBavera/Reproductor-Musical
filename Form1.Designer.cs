@@ -4,6 +4,7 @@ partial class Form1
 {
     private System.ComponentModel.IContainer components = null;
 
+
     protected override void Dispose(bool disposing)
     {
         if (disposing && (components != null))
@@ -15,41 +16,30 @@ partial class Form1
 
     private void InitializeComponent()
     {
-        materialButton1 = new MaterialSkin.Controls.MaterialButton();
+        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
         materialProgressBar1 = new MaterialSkin.Controls.MaterialProgressBar();
         Volumen = new MaterialSkin.Controls.MaterialSlider();
-        materialButton2 = new MaterialSkin.Controls.MaterialButton();
-        materialButton3 = new MaterialSkin.Controls.MaterialButton();
         btnAbrir = new MaterialSkin.Controls.MaterialButton();
         pictureBoxPortada = new PictureBox();
         lblTiempo = new MaterialSkin.Controls.MaterialLabel();
+        lblTitulo = new MaterialSkin.Controls.MaterialLabel();
+        lblArtistaAlbum = new MaterialSkin.Controls.MaterialLabel();
+        pictureBox1 = new PictureBox();
+        pictureBox2 = new PictureBox();
+        materialFloatingActionButton1 = new MaterialSkin.Controls.MaterialFloatingActionButton();
+        pictureBox3 = new PictureBox();
+        pictureBox4 = new PictureBox();
         ((System.ComponentModel.ISupportInitialize)pictureBoxPortada).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)pictureBox4).BeginInit();
         SuspendLayout();
-        // 
-        // materialButton1
-        // 
-        materialButton1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        materialButton1.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
-        materialButton1.Depth = 0;
-        materialButton1.HighEmphasis = true;
-        materialButton1.Icon = null;
-        materialButton1.Location = new Point(311, 597);
-        materialButton1.Margin = new Padding(4, 6, 4, 6);
-        materialButton1.MouseState = MaterialSkin.MouseState.HOVER;
-        materialButton1.Name = "materialButton1";
-        materialButton1.NoAccentTextColor = Color.Empty;
-        materialButton1.Size = new Size(64, 36);
-        materialButton1.TabIndex = 4;
-        materialButton1.Text = "▶";
-        materialButton1.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
-        materialButton1.UseAccentColor = false;
-        materialButton1.UseVisualStyleBackColor = true;
-        materialButton1.Click += materialButton1_Click;
         // 
         // materialProgressBar1
         // 
         materialProgressBar1.Depth = 0;
-        materialProgressBar1.Location = new Point(78, 550);
+        materialProgressBar1.Location = new Point(60, 581);
         materialProgressBar1.MouseState = MaterialSkin.MouseState.HOVER;
         materialProgressBar1.Name = "materialProgressBar1";
         materialProgressBar1.Size = new Size(531, 5);
@@ -60,61 +50,24 @@ partial class Form1
         // 
         Volumen.Depth = 0;
         Volumen.ForeColor = Color.FromArgb(222, 0, 0, 0);
-        Volumen.Location = new Point(184, 684);
+        Volumen.Location = new Point(182, 737);
         Volumen.MouseState = MaterialSkin.MouseState.HOVER;
         Volumen.Name = "Volumen";
+        Volumen.ShowText = false;
+        Volumen.ShowValue = false;
         Volumen.Size = new Size(286, 40);
         Volumen.TabIndex = 6;
-        Volumen.Text = "Volumen";
-        // 
-        // materialButton2
-        // 
-        materialButton2.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        materialButton2.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
-        materialButton2.Depth = 0;
-        materialButton2.HighEmphasis = true;
-        materialButton2.Icon = null;
-        materialButton2.Location = new Point(443, 597);
-        materialButton2.Margin = new Padding(4, 6, 4, 6);
-        materialButton2.MouseState = MaterialSkin.MouseState.HOVER;
-        materialButton2.Name = "materialButton2";
-        materialButton2.NoAccentTextColor = Color.Empty;
-        materialButton2.Size = new Size(64, 36);
-        materialButton2.TabIndex = 7;
-        materialButton2.Text = "⏭";
-        materialButton2.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
-        materialButton2.UseAccentColor = false;
-        materialButton2.UseVisualStyleBackColor = true;
-        materialButton2.Click += materialButton2_Click;
-        // 
-        // materialButton3
-        // 
-        materialButton3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        materialButton3.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
-        materialButton3.Depth = 0;
-        materialButton3.HighEmphasis = true;
-        materialButton3.Icon = null;
-        materialButton3.Location = new Point(179, 597);
-        materialButton3.Margin = new Padding(4, 6, 4, 6);
-        materialButton3.MouseState = MaterialSkin.MouseState.HOVER;
-        materialButton3.Name = "materialButton3";
-        materialButton3.NoAccentTextColor = Color.Empty;
-        materialButton3.Size = new Size(64, 36);
-        materialButton3.TabIndex = 8;
-        materialButton3.Text = "⏮";
-        materialButton3.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
-        materialButton3.UseAccentColor = false;
-        materialButton3.UseVisualStyleBackColor = true;
-        materialButton3.Click += materialButton3_Click;
+        Volumen.Text = "";
         // 
         // btnAbrir
         // 
+        btnAbrir.AutoSize = false;
         btnAbrir.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         btnAbrir.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
         btnAbrir.Depth = 0;
         btnAbrir.HighEmphasis = true;
         btnAbrir.Icon = null;
-        btnAbrir.Location = new Point(591, 81);
+        btnAbrir.Location = new Point(60, 514);
         btnAbrir.Margin = new Padding(4, 6, 4, 6);
         btnAbrir.MouseState = MaterialSkin.MouseState.HOVER;
         btnAbrir.Name = "btnAbrir";
@@ -131,9 +84,9 @@ partial class Form1
         // 
         pictureBoxPortada.BackColor = Color.FromArgb(240, 240, 240);
         pictureBoxPortada.BorderStyle = BorderStyle.FixedSingle;
-        pictureBoxPortada.Location = new Point(175, 160);
+        pictureBoxPortada.Location = new Point(135, 98);
         pictureBoxPortada.Name = "pictureBoxPortada";
-        pictureBoxPortada.Size = new Size(336, 336);
+        pictureBoxPortada.Size = new Size(380, 380);
         pictureBoxPortada.SizeMode = PictureBoxSizeMode.Zoom;
         pictureBoxPortada.TabIndex = 10;
         pictureBoxPortada.TabStop = false;
@@ -143,7 +96,7 @@ partial class Form1
         lblTiempo.AutoSize = true;
         lblTiempo.Depth = 0;
         lblTiempo.Font = new Font("Roboto", 14F, FontStyle.Regular, GraphicsUnit.Pixel);
-        lblTiempo.Location = new Point(295, 523);
+        lblTiempo.Location = new Point(277, 598);
         lblTiempo.Margin = new Padding(0, 0, 10, 10);
         lblTiempo.MouseState = MaterialSkin.MouseState.HOVER;
         lblTiempo.Name = "lblTiempo";
@@ -152,36 +105,139 @@ partial class Form1
         lblTiempo.Text = "00:00 / 00:00";
         lblTiempo.TextAlign = ContentAlignment.MiddleCenter;
         // 
+        // lblTitulo
+        // 
+        lblTitulo.Depth = 0;
+        lblTitulo.Font = new Font("Roboto", 24F, FontStyle.Bold, GraphicsUnit.Pixel);
+        lblTitulo.FontType = MaterialSkin.MaterialSkinManager.fontType.H5;
+        lblTitulo.Location = new Point(175, 496);
+        lblTitulo.Margin = new Padding(0, 0, 10, 10);
+        lblTitulo.MouseState = MaterialSkin.MouseState.HOVER;
+        lblTitulo.Name = "lblTitulo";
+        lblTitulo.Size = new Size(300, 29);
+        lblTitulo.TabIndex = 12;
+        lblTitulo.Text = "Título";
+        lblTitulo.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // lblArtistaAlbum
+        // 
+        lblArtistaAlbum.Depth = 0;
+        lblArtistaAlbum.Font = new Font("Roboto", 14F, FontStyle.Regular, GraphicsUnit.Pixel);
+        lblArtistaAlbum.Location = new Point(175, 545);
+        lblArtistaAlbum.Margin = new Padding(0, 0, 10, 10);
+        lblArtistaAlbum.MouseState = MaterialSkin.MouseState.HOVER;
+        lblArtistaAlbum.Name = "lblArtistaAlbum";
+        lblArtistaAlbum.Size = new Size(300, 19);
+        lblArtistaAlbum.TabIndex = 13;
+        lblArtistaAlbum.Text = "Artista - Álbum";
+        lblArtistaAlbum.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // pictureBox1
+        // 
+        pictureBox1.BackColor = Color.Transparent;
+        pictureBox1.BackgroundImage = Reproductor.WinForm.Properties.Resources.skip_forward;
+        pictureBox1.BackgroundImageLayout = ImageLayout.Center;
+        pictureBox1.Cursor = Cursors.Hand;
+        pictureBox1.Location = new Point(362, 642);
+        pictureBox1.Name = "pictureBox1";
+        pictureBox1.Size = new Size(56, 56);
+        pictureBox1.TabIndex = 15;
+        pictureBox1.TabStop = false;
+        pictureBox1.Click += pictureBox1_Click;
+        // 
+        // pictureBox2
+        // 
+        pictureBox2.BackColor = Color.Transparent;
+        pictureBox2.BackgroundImage = Reproductor.WinForm.Properties.Resources.skip_back;
+        pictureBox2.BackgroundImageLayout = ImageLayout.Center;
+        pictureBox2.Cursor = Cursors.Hand;
+        pictureBox2.Location = new Point(232, 642);
+        pictureBox2.Name = "pictureBox2";
+        pictureBox2.Size = new Size(56, 56);
+        pictureBox2.TabIndex = 16;
+        pictureBox2.TabStop = false;
+        pictureBox2.Click += pictureBox2_Click;
+        // 
+        // materialFloatingActionButton1
+        // 
+        materialFloatingActionButton1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        materialFloatingActionButton1.Depth = 0;
+        materialFloatingActionButton1.Icon = Reproductor.WinForm.Properties.Resources.play;
+        materialFloatingActionButton1.Location = new Point(297, 642);
+        materialFloatingActionButton1.MouseState = MaterialSkin.MouseState.HOVER;
+        materialFloatingActionButton1.Name = "materialFloatingActionButton1";
+        materialFloatingActionButton1.Size = new Size(128, 219);
+        materialFloatingActionButton1.TabIndex = 17;
+        materialFloatingActionButton1.Click += materialFloatingActionButton1_Click_1;
+        // 
+        // pictureBox3
+        // 
+        pictureBox3.BackColor = Color.Transparent;
+        pictureBox3.BackgroundImage = Reproductor.WinForm.Properties.Resources.forward_10;
+        pictureBox3.BackgroundImageLayout = ImageLayout.Center;
+        pictureBox3.Cursor = Cursors.Hand;
+        pictureBox3.Location = new Point(471, 648);
+        pictureBox3.Name = "pictureBox3";
+        pictureBox3.Size = new Size(44, 44);
+        pictureBox3.TabIndex = 18;
+        pictureBox3.TabStop = false;
+        pictureBox3.Click += pictureBox3_Click;
+        // 
+        // pictureBox4
+        // 
+        pictureBox4.BackColor = Color.Transparent;
+        pictureBox4.BackgroundImage = Reproductor.WinForm.Properties.Resources.replay_10;
+        pictureBox4.BackgroundImageLayout = ImageLayout.Center;
+        pictureBox4.Cursor = Cursors.Hand;
+        pictureBox4.Location = new Point(135, 648);
+        pictureBox4.Name = "pictureBox4";
+        pictureBox4.Size = new Size(44, 44);
+        pictureBox4.TabIndex = 19;
+        pictureBox4.TabStop = false;
+        pictureBox4.Click += pictureBox4_Click;
+        // 
         // Form1
         // 
-        AutoScaleDimensions = new SizeF(8F, 19F);
-        AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(740, 870);
+        AutoScaleMode = AutoScaleMode.None;
+        ClientSize = new Size(722, 963);
+        Controls.Add(pictureBox4);
+        Controls.Add(pictureBox3);
+        Controls.Add(materialFloatingActionButton1);
+        Controls.Add(pictureBox2);
+        Controls.Add(pictureBox1);
+        Controls.Add(lblArtistaAlbum);
+        Controls.Add(lblTitulo);
         Controls.Add(lblTiempo);
         Controls.Add(pictureBoxPortada);
         Controls.Add(btnAbrir);
-        Controls.Add(materialButton3);
-        Controls.Add(materialButton2);
         Controls.Add(Volumen);
         Controls.Add(materialProgressBar1);
-        Controls.Add(materialButton1);
         FormBorderStyle = FormBorderStyle.FixedSingle;
+        Icon = (Icon)resources.GetObject("$this.Icon");
         MaximizeBox = false;
         Name = "Form1";
+        Padding = new Padding(0);
         StartPosition = FormStartPosition.CenterScreen;
-        Text = "Reproductor FLAC";
+        Text = "Reproductor de Musica";
         Load += Form1_Load;
         ((System.ComponentModel.ISupportInitialize)pictureBoxPortada).EndInit();
+        ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+        ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
+        ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
+        ((System.ComponentModel.ISupportInitialize)pictureBox4).EndInit();
         ResumeLayout(false);
         PerformLayout();
     }
-
-    private MaterialSkin.Controls.MaterialButton materialButton1;
     private MaterialSkin.Controls.MaterialProgressBar materialProgressBar1;
     private MaterialSkin.Controls.MaterialSlider Volumen;
-    private MaterialSkin.Controls.MaterialButton materialButton2;
-    private MaterialSkin.Controls.MaterialButton materialButton3;
     private MaterialSkin.Controls.MaterialButton btnAbrir;
     private PictureBox pictureBoxPortada;
     private MaterialSkin.Controls.MaterialLabel lblTiempo;
+    private MaterialSkin.Controls.MaterialLabel lblTitulo;
+    private MaterialSkin.Controls.MaterialLabel lblArtistaAlbum;
+    private PictureBox pictureBox1;
+    private PictureBox pictureBox2;
+    private MaterialSkin.Controls.MaterialFloatingActionButton materialFloatingActionButton1;
+    private PictureBox pictureBox3;
+    private PictureBox pictureBox4;
 }
