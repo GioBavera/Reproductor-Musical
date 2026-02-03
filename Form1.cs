@@ -1,7 +1,14 @@
 using MaterialSkin.Controls;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 namespace ReproductorFLAC;
+
+// <summary>
+/// Reproductor de musica FLAC para Windows usando NAudio
+/// MaterialSkin para una IU "Moderna"
+/// ATENCION: Presenta problemas en archivos FLAC de alta calidad (24-bit o más)
+/// <summary>
 
 public partial class Form1 : MaterialForm
 {
@@ -14,15 +21,19 @@ public partial class Form1 : MaterialForm
     private static float _volumenPersistente = 0.5f; // 50% por defecto
     private int _duracionTotalSegundos = 0;
 
+    // Estado del botón de muteo
+    private bool _estaMuteado = false;
+    private float _volumenAntesDelMute = 0.5f;
+
     private ToolTip _toolTip;
 
     // Lista de reproducción
     private List<string> _listaReproduccion = new List<string>();
     private int _indiceActual = -1;
-    private bool _repetirCancion = false; // Modo repetición
+    private bool _repetirCancion = false; // Modo repeticion
     private System.Windows.Forms.Timer? _timerShuffle; // Timer para efecto shuffle
 
-    // Tamaño CORRECTO y FIJO del formulario
+    // Tamaño fijo del formulario
     private static readonly Size TAMANO_FORMULARIO = new Size(950, 800);
 
     public Form1()
@@ -60,10 +71,6 @@ public partial class Form1 : MaterialForm
 
         // Establecer volumen persistente en el slider
         Volumen.Value = (int)(_volumenPersistente * 100);
-
-        // IMPORTANTE: Desactivar AutoSize de los labels para evitar que se redimensionen solos
-        //lblTitulo.AutoSize = false;
-        //lblArtistaAlbum.AutoSize = false;
 
         // Cargar imagen por defecto para la portada
         CargarPortadaPorDefecto();
@@ -356,6 +363,23 @@ public partial class Form1 : MaterialForm
         // Guardar el volumen en la variable persistente
         _volumenPersistente = Volumen.Value / 100f;
 
+        // Si estábamos muteados y el usuario mueve el slider, salir del estado muteado
+        if (_estaMuteado && Volumen.Value > 0)
+        {
+            _estaMuteado = false;
+            pictureBox7.Image = Reproductor.WinForm.Properties.Resources.volume_up;
+            pictureBox7.BackColor = Color.Transparent;
+            _volumenAntesDelMute = _volumenPersistente;
+        }
+
+        // Si el volumen es 0, actualizar al estado muteado
+        if (Volumen.Value == 0 && !_estaMuteado)
+        {
+            _estaMuteado = true;
+            pictureBox7.Image = Reproductor.WinForm.Properties.Resources.volume_off;
+            pictureBox7.BackColor = Color.FromArgb(255, 128, 0); // Naranja
+        }
+
         // Aplicar al reproductor si está activo
         if (_audioPlayer != null)
         {
@@ -398,25 +422,66 @@ public partial class Form1 : MaterialForm
     {
         _audioPlayer?.Dispose();
 
-        using var reader = new AudioFileReader(ruta);
+        try
+        {
+            // Obtener duración sin cargar todo el archivo en memoria
+            _duracionTotalSegundos = ObtenerDuracionArchivo(ruta);
+            materialProgressBar1.Maximum = _duracionTotalSegundos;
+            materialProgressBar1.Value = 0;
 
-        _duracionTotalSegundos = (int)reader.TotalTime.TotalSeconds;
-        materialProgressBar1.Maximum = _duracionTotalSegundos;
-        materialProgressBar1.Value = 0;
+            _audioPlayer = new AudioPlayer(ruta, _volumenPersistente);
 
-        _audioPlayer = new AudioPlayer(ruta, _volumenPersistente);
+            // Extraer y mostrar metadatos en el título de la ventana
+            var metadatos = ExtraerMetadatos(ruta);
+            ActualizarTituloVentana(metadatos);
 
-        // Extraer y mostrar metadatos en el título de la ventana
-        var metadatos = ExtraerMetadatos(ruta);
-        ActualizarTituloVentana(metadatos);
+            _audioPlayer.Play();
+            _estaReproduciendo = true;
+            _timerProgreso?.Start();
+            materialFloatingActionButton1.Icon = Reproductor.WinForm.Properties.Resources.pause;
 
-        _audioPlayer.Play();
-        _estaReproduciendo = true;
-        _timerProgreso?.Start();
-        materialFloatingActionButton1.Icon = Reproductor.WinForm.Properties.Resources.pause;
+            // Actualizar display de tiempo
+            ActualizarTiempoDisplay(0);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Error al cargar el archivo:\n\n{ex.Message}\n\nEl archivo puede tener un formato no compatible o estar dañado.",
+                "Error de Reproducción",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
 
-        // Actualizar display de tiempo
-        ActualizarTiempoDisplay(0);
+            // Resetear interfaz
+            lblTitulo.Text = "Error al cargar";
+            lblArtistaAlbum.Text = "Intenta con otro archivo";
+            CargarPortadaPorDefecto();
+        }
+    }
+
+    private int ObtenerDuracionArchivo(string ruta)
+    {
+        try
+        {
+            // Usar AudioFileReader para obtener la duración
+            using var reader = new AudioFileReader(ruta);
+            return (int)reader.TotalTime.TotalSeconds;
+        }
+        catch (Exception ex)
+        {
+            // Último recurso: intentar con TagLib para obtener la duración de los metadatos
+            try
+            {
+                using var file = TagLib.File.Create(ruta);
+                if (file.Properties.Duration.TotalSeconds > 0)
+                {
+                    return (int)file.Properties.Duration.TotalSeconds;
+                }
+            }
+            catch { }
+
+            throw new Exception("No se pudo obtener la duración del archivo", ex);
+        }
     }
 
     private (string titulo, string artista, string album) ExtraerMetadatos(string rutaArchivo)
@@ -527,11 +592,6 @@ public partial class Form1 : MaterialForm
         base.OnResize(e);
     }
 
-    private void volumeMeter2_Click(object sender, EventArgs e)
-    {
-        // Placeholder - no usado
-    }
-
     private void btnAbrir_Click(object sender, EventArgs e)
     {
         AbrirArchivo();
@@ -596,11 +656,6 @@ public partial class Form1 : MaterialForm
             materialProgressBar1.Value = newPos;
             ActualizarTiempoDisplay(newPos);
         }
-    }
-
-    private void lblTiempo_Click(object sender, EventArgs e)
-    {
-
     }
 
     // Shuffle buttom
@@ -693,6 +748,44 @@ public partial class Form1 : MaterialForm
         ActualizarTiempoDisplay(0);
         materialFloatingActionButton1.Icon = Reproductor.WinForm.Properties.Resources.play;
     }
+
+    private void pictureBox7_Click(object sender, EventArgs e)
+    {
+        if (!_estaMuteado)
+        {
+            // Guardar el volumen actual antes de mutear
+            _volumenAntesDelMute = Volumen.Value / 100f;
+
+            // Poner volumen a 0 (muteado)
+            Volumen.Value = 0;
+            _volumenPersistente = 0;
+
+            // Cambiar icono a muteado
+            pictureBox7.Image = Reproductor.WinForm.Properties.Resources.volume_off;
+
+            _estaMuteado = true;
+        }
+        else
+        {
+            // Restaurar volumen anterior
+            Volumen.Value = (int)(_volumenAntesDelMute * 100);
+            _volumenPersistente = _volumenAntesDelMute;
+
+            // Cambiar icono a volumen activo
+            pictureBox7.Image = Reproductor.WinForm.Properties.Resources.volume_up;
+
+            // Quitar color de fondo naranja (volver transparente)
+            pictureBox7.BackColor = Color.Transparent;
+
+            _estaMuteado = false;
+        }
+
+        // Aplicar al reproductor si está activo
+        if (_audioPlayer != null)
+        {
+            _audioPlayer.SetVolume(_volumenPersistente);
+        }
+    }
 }
 
 public interface IAudioPlayer
@@ -709,6 +802,7 @@ public interface IAudioPlayer
 public class AudioPlayer : IAudioPlayer, IDisposable
 {
     private IWavePlayer? _wavePlayer;
+    private ISampleProvider? _sampleProvider;
     private AudioFileReader? _audioFileReader;
     private readonly string _rutaArchivo;
     private readonly float _volumenInicial;
@@ -723,13 +817,49 @@ public class AudioPlayer : IAudioPlayer, IDisposable
     {
         if (_wavePlayer == null)
         {
-            _audioFileReader = new AudioFileReader(_rutaArchivo);
-            _audioFileReader.Volume = _volumenInicial; // Establecer volumen al crear el reader
-            _wavePlayer = new WaveOutEvent();
-            _wavePlayer.Init(_audioFileReader);
+            try
+            {
+                // Crear el reader del archivo
+                _audioFileReader = new AudioFileReader(_rutaArchivo);
+                _audioFileReader.Volume = _volumenInicial;
+
+                // Para archivos de 24-bit o alta calidad, agregar conversión si es necesario
+                _sampleProvider = CrearCadenaConversion(_audioFileReader);
+
+                // Usar WaveOutEvent con buffer más grande para archivos grandes
+                _wavePlayer = new WaveOutEvent
+                {
+                    DesiredLatency = 200, // Latencia más alta para archivos grandes
+                    NumberOfBuffers = 2
+                };
+
+                _wavePlayer.Init(_sampleProvider);
+            }
+            catch (Exception ex)
+            {
+                // Limpiar recursos si falla
+                _audioFileReader?.Dispose();
+                _audioFileReader = null;
+                throw new Exception($"Error al inicializar el audio: {ex.Message}", ex);
+            }
         }
 
         _wavePlayer.Play();
+    }
+
+    private ISampleProvider CrearCadenaConversion(AudioFileReader reader)
+    {
+        ISampleProvider provider = reader;
+
+        // Si el archivo tiene una sample rate muy alta (mayor a 48kHz), resamplear
+        // Esto reduce el uso de CPU y mejora la compatibilidad
+        if (reader.WaveFormat.SampleRate > 48000)
+        {
+            // Usar WdlResamplingSampleProvider para reducir a 48kHz
+            provider = new WdlResamplingSampleProvider(reader, 48000);
+        }
+
+        return provider;
     }
 
     public void Pause()
@@ -744,6 +874,7 @@ public class AudioPlayer : IAudioPlayer, IDisposable
         _wavePlayer?.Dispose();
         _audioFileReader = null;
         _wavePlayer = null;
+        _sampleProvider = null;
     }
 
     public void SetVolume(float volume)

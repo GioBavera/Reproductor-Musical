@@ -38,6 +38,8 @@ partial class Form1
         materialButton1 = new MaterialSkin.Controls.MaterialButton();
         listaReproduccion = new ListBox();
         panel1 = new Panel();
+        materialLabel1 = new MaterialSkin.Controls.MaterialLabel();
+        pictureBox7 = new PictureBox();
         ((System.ComponentModel.ISupportInitialize)pictureBoxPortada).BeginInit();
         ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
         ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
@@ -47,6 +49,7 @@ partial class Form1
         ((System.ComponentModel.ISupportInitialize)pictureBox5).BeginInit();
         ((System.ComponentModel.ISupportInitialize)pictureBox6).BeginInit();
         panel1.SuspendLayout();
+        ((System.ComponentModel.ISupportInitialize)pictureBox7).BeginInit();
         SuspendLayout();
         // 
         // materialProgressBar1
@@ -63,7 +66,7 @@ partial class Form1
         // 
         Volumen.Depth = 0;
         Volumen.ForeColor = Color.FromArgb(222, 0, 0, 0);
-        Volumen.Location = new Point(181, 733);
+        Volumen.Location = new Point(211, 730);
         Volumen.MouseState = MaterialSkin.MouseState.HOVER;
         Volumen.Name = "Volumen";
         Volumen.ShowText = false;
@@ -83,12 +86,12 @@ partial class Form1
         btnAbrir.FlatStyle = FlatStyle.Flat;
         btnAbrir.HighEmphasis = true;
         btnAbrir.Icon = null;
-        btnAbrir.Location = new Point(33, 618);
+        btnAbrir.Location = new Point(24, 610);
         btnAbrir.Margin = new Padding(4, 6, 4, 6);
         btnAbrir.MouseState = MaterialSkin.MouseState.HOVER;
         btnAbrir.Name = "btnAbrir";
         btnAbrir.NoAccentTextColor = Color.Empty;
-        btnAbrir.Size = new Size(106, 36);
+        btnAbrir.Size = new Size(110, 44);
         btnAbrir.TabIndex = 9;
         btnAbrir.Text = "📁   AGREGAR";
         btnAbrir.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
@@ -139,7 +142,7 @@ partial class Form1
         // 
         lblArtistaAlbum.Depth = 0;
         lblArtistaAlbum.Font = new Font("Roboto", 14F, FontStyle.Regular, GraphicsUnit.Pixel);
-        lblArtistaAlbum.Location = new Point(174, 541);
+        lblArtistaAlbum.Location = new Point(174, 535);
         lblArtistaAlbum.Margin = new Padding(0, 0, 10, 10);
         lblArtistaAlbum.MouseState = MaterialSkin.MouseState.HOVER;
         lblArtistaAlbum.Name = "lblArtistaAlbum";
@@ -182,7 +185,7 @@ partial class Form1
         materialFloatingActionButton1.Location = new Point(296, 638);
         materialFloatingActionButton1.MouseState = MaterialSkin.MouseState.HOVER;
         materialFloatingActionButton1.Name = "materialFloatingActionButton1";
-        materialFloatingActionButton1.Size = new Size(374, 100);
+        materialFloatingActionButton1.Size = new Size(378, 112);
         materialFloatingActionButton1.TabIndex = 17;
         materialFloatingActionButton1.Click += materialFloatingActionButton1_Click_1;
         // 
@@ -231,12 +234,12 @@ partial class Form1
         contextMenuLista.ImageScalingSize = new Size(20, 20);
         contextMenuLista.Items.AddRange(new ToolStripItem[] { eliminarCancionToolStripMenuItem });
         contextMenuLista.Name = "contextMenuLista";
-        contextMenuLista.Size = new Size(177, 28);
+        contextMenuLista.Size = new Size(212, 36);
         // 
         // eliminarCancionToolStripMenuItem
         // 
         eliminarCancionToolStripMenuItem.Name = "eliminarCancionToolStripMenuItem";
-        eliminarCancionToolStripMenuItem.Size = new Size(176, 24);
+        eliminarCancionToolStripMenuItem.Size = new Size(211, 32);
         eliminarCancionToolStripMenuItem.Text = "Eliminar canción";
         eliminarCancionToolStripMenuItem.Click += eliminarCancionToolStripMenuItem_Click;
         // 
@@ -277,12 +280,12 @@ partial class Form1
         materialButton1.FlatStyle = FlatStyle.Flat;
         materialButton1.HighEmphasis = true;
         materialButton1.Icon = null;
-        materialButton1.Location = new Point(156, 618);
+        materialButton1.Location = new Point(157, 610);
         materialButton1.Margin = new Padding(4, 6, 4, 6);
         materialButton1.MouseState = MaterialSkin.MouseState.HOVER;
         materialButton1.Name = "materialButton1";
         materialButton1.NoAccentTextColor = Color.Empty;
-        materialButton1.Size = new Size(106, 36);
+        materialButton1.Size = new Size(110, 44);
         materialButton1.TabIndex = 25;
         materialButton1.Text = "🗑️ LIMPIAR";
         materialButton1.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
@@ -296,15 +299,17 @@ partial class Form1
         listaReproduccion.BorderStyle = BorderStyle.FixedSingle;
         listaReproduccion.Font = new Font("Segoe UI", 9F);
         listaReproduccion.FormattingEnabled = true;
-        listaReproduccion.Location = new Point(0, 10);
+        listaReproduccion.ItemHeight = 25;
+        listaReproduccion.Location = new Point(0, 35);
         listaReproduccion.Name = "listaReproduccion";
-        listaReproduccion.Size = new Size(290, 553);
+        listaReproduccion.Size = new Size(290, 527);
         listaReproduccion.TabIndex = 21;
         listaReproduccion.DoubleClick += listaReproduccion_DoubleClick;
         listaReproduccion.MouseDown += listaReproduccion_MouseDown;
         // 
         // panel1
         // 
+        panel1.Controls.Add(materialLabel1);
         panel1.Controls.Add(listaReproduccion);
         panel1.Controls.Add(materialButton1);
         panel1.Controls.Add(btnAbrir);
@@ -313,10 +318,36 @@ partial class Form1
         panel1.Size = new Size(290, 689);
         panel1.TabIndex = 26;
         // 
+        // materialLabel1
+        // 
+        materialLabel1.AutoSize = true;
+        materialLabel1.Depth = 0;
+        materialLabel1.Font = new Font("Roboto", 14F, FontStyle.Regular, GraphicsUnit.Pixel);
+        materialLabel1.Location = new Point(66, 10);
+        materialLabel1.MouseState = MaterialSkin.MouseState.HOVER;
+        materialLabel1.Name = "materialLabel1";
+        materialLabel1.Size = new Size(158, 19);
+        materialLabel1.TabIndex = 26;
+        materialLabel1.Text = "Lista de Reproduccion";
+        // 
+        // pictureBox7
+        // 
+        pictureBox7.BackColor = Color.Transparent;
+        pictureBox7.BackgroundImageLayout = ImageLayout.Center;
+        pictureBox7.Cursor = Cursors.Hand;
+        pictureBox7.Image = Reproductor.WinForm.Properties.Resources.volume_up;
+        pictureBox7.Location = new Point(178, 733);
+        pictureBox7.Name = "pictureBox7";
+        pictureBox7.Size = new Size(33, 40);
+        pictureBox7.TabIndex = 27;
+        pictureBox7.TabStop = false;
+        pictureBox7.Click += pictureBox7_Click;
+        // 
         // Form1
         // 
         AutoScaleMode = AutoScaleMode.None;
-        ClientSize = new Size(968, 844);
+        ClientSize = new Size(972, 856);
+        Controls.Add(pictureBox7);
         Controls.Add(pictureBox6);
         Controls.Add(pictureBox5);
         Controls.Add(lbltiempo2);
@@ -349,6 +380,8 @@ partial class Form1
         ((System.ComponentModel.ISupportInitialize)pictureBox5).EndInit();
         ((System.ComponentModel.ISupportInitialize)pictureBox6).EndInit();
         panel1.ResumeLayout(false);
+        panel1.PerformLayout();
+        ((System.ComponentModel.ISupportInitialize)pictureBox7).EndInit();
         ResumeLayout(false);
         PerformLayout();
     }
@@ -372,4 +405,6 @@ partial class Form1
     private MaterialSkin.Controls.MaterialButton materialButton1;
     private ListBox listaReproduccion;
     private Panel panel1;
+    private MaterialSkin.Controls.MaterialLabel materialLabel1;
+    private PictureBox pictureBox7;
 }

@@ -161,5 +161,22 @@ namespace Reproductor.WinForm.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        internal static System.Drawing.Bitmap volume_up
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("volume_up", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap volume_off
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("volume_off", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
