@@ -14,6 +14,8 @@ public partial class Form1 : MaterialForm
     private static float _volumenPersistente = 0.5f; // 50% por defecto
     private int _duracionTotalSegundos = 0;
 
+    private ToolTip _toolTip;
+
     // Tamaño CORRECTO y FIJO del formulario
     private static readonly Size TAMANO_FORMULARIO = new Size(650, 800);
 
@@ -27,13 +29,22 @@ public partial class Form1 : MaterialForm
         materialSkinManager.Theme = MaterialSkin.MaterialSkinManager.Themes.LIGHT;
         materialSkinManager.ColorScheme = new MaterialSkin.ColorScheme(
             MaterialSkin.Primary.Blue700,
-            MaterialSkin.Primary.Blue900,
-            MaterialSkin.Primary.Blue500,
-            MaterialSkin.Accent.Blue400,  // Cambiado de Orange700 a Blue400
+            MaterialSkin.Primary.Blue700,
+            MaterialSkin.Primary.Blue700,
+            MaterialSkin.Accent.Orange700,  // Cambiado de Orange700 a Blue400
             MaterialSkin.TextShade.BLACK
         );
 
-        // Inicializar timer
+        // Inicializar ToolTip
+        _toolTip = new ToolTip
+        {
+            AutoPopDelay = 5000,
+            InitialDelay = 500,
+            ReshowDelay = 100,
+            ShowAlways = true
+        };
+
+        // Inicializar timer de progreso
         _timerProgreso = new System.Windows.Forms.Timer { Interval = 100 };
         _timerProgreso.Tick += TimerProgreso_Tick;
 
@@ -108,7 +119,8 @@ public partial class Form1 : MaterialForm
 
     private void ActualizarTiempoDisplay(int posicionActual)
     {
-        lblTiempo.Text = $"{FormatearTiempo(posicionActual)} / {FormatearTiempo(_duracionTotalSegundos)}";
+        lblTiempo.Text = $"{FormatearTiempo(posicionActual)}";
+        lbltiempo2.Text = $"{FormatearTiempo(_duracionTotalSegundos)}";
     }
 
     private void materialProgressBar1_Click(object sender, EventArgs e)
@@ -208,16 +220,43 @@ public partial class Form1 : MaterialForm
     {
         this.Text = $"Reproductor de Musica";
 
-        // Actualizar labels en la interfaz
-        lblTitulo.Text = metadatos.titulo.ToUpper();
+        // Truncar título si es muy largo y configurar tooltip
+        string tituloCompleto = metadatos.titulo.ToUpper();
+        string tituloTruncado = TruncarTexto(tituloCompleto, lblTitulo);
+        lblTitulo.Text = tituloTruncado;
+        _toolTip.SetToolTip(lblTitulo, tituloCompleto);
 
-        if (!string.IsNullOrEmpty(metadatos.album))
+        // Truncar artista/álbum si es muy largo y configurar tooltip
+        string artistaAlbumCompleto = !string.IsNullOrEmpty(metadatos.album)
+            ? $"{metadatos.artista} - {metadatos.album}"
+            : metadatos.artista;
+
+        string artistaAlbumTruncado = TruncarTexto(artistaAlbumCompleto, lblArtistaAlbum);
+        lblArtistaAlbum.Text = artistaAlbumTruncado;
+        _toolTip.SetToolTip(lblArtistaAlbum, artistaAlbumCompleto);
+    }
+
+    private string TruncarTexto(string texto, Label label)
+    {
+        if (string.IsNullOrEmpty(texto))
+            return texto;
+
+        using (Graphics g = label.CreateGraphics())
         {
-            lblArtistaAlbum.Text = $"{metadatos.artista} - {metadatos.album}";
-        }
-        else
-        {
-            lblArtistaAlbum.Text = metadatos.artista;
+            SizeF tamanho = g.MeasureString(texto, label.Font);
+
+            // Si el texto cabe completo, devolverlo tal cual
+            if (tamanho.Width <= label.Width)
+                return texto;
+
+            // Calcular cuántos caracteres caben aproximadamente
+            float anchoCaracter = tamanho.Width / texto.Length;
+            int caracteresQueCaben = (int)(label.Width / anchoCaracter) - 5;
+
+            if (caracteresQueCaben > 0)
+                return texto.Substring(0, caracteresQueCaben) + "...";
+
+            return "...";
         }
     }
 
@@ -226,6 +265,7 @@ public partial class Form1 : MaterialForm
         _audioPlayer?.Dispose();
         _timerProgreso?.Stop();
         _timerProgreso?.Dispose();
+        _toolTip?.Dispose();
         base.OnFormClosing(e);
     }
 
@@ -333,6 +373,11 @@ public partial class Form1 : MaterialForm
             materialProgressBar1.Value = newPos;
             ActualizarTiempoDisplay(newPos);
         }
+    }
+
+    private void lblTiempo_Click(object sender, EventArgs e)
+    {
+
     }
 }
 
