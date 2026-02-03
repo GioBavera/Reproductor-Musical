@@ -16,8 +16,14 @@ public partial class Form1 : MaterialForm
 
     private ToolTip _toolTip;
 
+    // Lista de reproducción
+    private List<string> _listaReproduccion = new List<string>();
+    private int _indiceActual = -1;
+    private bool _repetirCancion = false; // Modo repetición
+    private System.Windows.Forms.Timer? _timerShuffle; // Timer para efecto shuffle
+
     // Tamaño CORRECTO y FIJO del formulario
-    private static readonly Size TAMANO_FORMULARIO = new Size(650, 800);
+    private static readonly Size TAMANO_FORMULARIO = new Size(950, 800);
 
     public Form1()
     {
@@ -31,7 +37,7 @@ public partial class Form1 : MaterialForm
             MaterialSkin.Primary.Blue700,
             MaterialSkin.Primary.Blue700,
             MaterialSkin.Primary.Blue700,
-            MaterialSkin.Accent.Orange700,  // Cambiado de Orange700 a Blue400
+            MaterialSkin.Accent.Orange700,
             MaterialSkin.TextShade.BLACK
         );
 
@@ -48,20 +54,22 @@ public partial class Form1 : MaterialForm
         _timerProgreso = new System.Windows.Forms.Timer { Interval = 100 };
         _timerProgreso.Tick += TimerProgreso_Tick;
 
-        // Configurar controles
+        // Inicializar timer para efecto visual de shuffle
+        _timerShuffle = new System.Windows.Forms.Timer { Interval = 100 };
+        _timerShuffle.Tick += TimerShuffle_Tick;
 
         // Establecer volumen persistente en el slider
         Volumen.Value = (int)(_volumenPersistente * 100);
 
         // IMPORTANTE: Desactivar AutoSize de los labels para evitar que se redimensionen solos
-        lblTitulo.AutoSize = false;
-        lblArtistaAlbum.AutoSize = false;
+        //lblTitulo.AutoSize = false;
+        //lblArtistaAlbum.AutoSize = false;
 
         // Cargar imagen por defecto para la portada
         CargarPortadaPorDefecto();
 
         // Inicializar labels de metadatos
-        lblTitulo.Text = "Reproductor FLAC";
+        lblTitulo.Text = "Reproductor";
         lblArtistaAlbum.Text = "Abre un archivo para comenzar";
         materialFloatingActionButton1.Icon = Reproductor.WinForm.Properties.Resources.play;
     }
@@ -114,7 +122,210 @@ public partial class Form1 : MaterialForm
                 materialProgressBar1.Value = posicionActual;
                 ActualizarTiempoDisplay(posicionActual);
             }
+
+            // Detectar cuando termina la canción
+            if (posicionActual >= materialProgressBar1.Maximum)
+            {
+                if (_repetirCancion)
+                {
+                    // Repetir la canción actual
+                    ReiniciarCancionActual();
+                }
+                else
+                {
+                    // Pasar a la siguiente canción
+                    ReproducirSiguiente();
+                }
+            }
         }
+    }
+
+    private void ReiniciarCancionActual()
+    {
+        if (_audioPlayer != null)
+        {
+            _audioPlayer.SetPosition(0);
+            materialProgressBar1.Value = 0;
+            ActualizarTiempoDisplay(0);
+        }
+    }
+
+    private void ActualizarListaReproduccion()
+    {
+        listaReproduccion.Items.Clear();
+
+        for (int i = 0; i < _listaReproduccion.Count; i++)
+        {
+            string nombreArchivo = System.IO.Path.GetFileNameWithoutExtension(_listaReproduccion[i]);
+            string prefijo = (i == _indiceActual) ? "▶ " : "   ";
+            listaReproduccion.Items.Add(prefijo + nombreArchivo);
+        }
+
+        // Mostrar la lista si hay archivos
+        listaReproduccion.Visible = _listaReproduccion.Count > 0;
+
+        // Seleccionar el ítem actual
+        if (_indiceActual >= 0 && _indiceActual < listaReproduccion.Items.Count)
+        {
+            listaReproduccion.SelectedIndex = _indiceActual;
+        }
+    }
+
+    private void listaReproduccion_DoubleClick(object? sender, EventArgs e)
+    {
+        if (listaReproduccion.SelectedIndex >= 0)
+        {
+            _indiceActual = listaReproduccion.SelectedIndex;
+            ReproducirIndice(_indiceActual);
+        }
+    }
+
+    private void listaReproduccion_MouseDown(object? sender, MouseEventArgs e)
+    {
+        if (e.Button == MouseButtons.Right)
+        {
+            int indice = listaReproduccion.IndexFromPoint(e.Location);
+
+            if (indice >= 0)
+            {
+                listaReproduccion.SelectedIndex = indice;
+                contextMenuLista.Show(listaReproduccion, e.Location);
+            }
+        }
+    }
+
+    private void eliminarCancionToolStripMenuItem_Click(object? sender, EventArgs e)
+    {
+        if (listaReproduccion.SelectedIndex >= 0)
+        {
+            EliminarCancionDeLista(listaReproduccion.SelectedIndex);
+        }
+    }
+
+    private void btnLimpiarLista_Click(object? sender, EventArgs e)
+    {
+        if (_listaReproduccion.Count == 0)
+            return;
+
+        // Detener reproducción actual
+        _audioPlayer?.Stop();
+        _audioPlayer?.Dispose();
+        _audioPlayer = null;
+        _estaReproduciendo = false;
+        _timerProgreso?.Stop();
+
+        // Limpiar todo
+        _listaReproduccion.Clear();
+        _indiceActual = -1;
+        _archivoActual = null;
+
+        // Resetear interfaz
+        listaReproduccion.Items.Clear();
+        listaReproduccion.Visible = false;
+        lblTitulo.Text = "Reproductor";
+        lblArtistaAlbum.Text = "Lista vacía";
+        CargarPortadaPorDefecto();
+        materialProgressBar1.Value = 0;
+        ActualizarTiempoDisplay(0);
+        materialFloatingActionButton1.Icon = Reproductor.WinForm.Properties.Resources.play;
+    }
+
+    public void EliminarCancionDeLista(int indice)
+    {
+        if (indice < 0 || indice >= _listaReproduccion.Count)
+            return;
+
+        // Si es la canción actual
+        if (indice == _indiceActual)
+        {
+            // Detener reproducción
+            _audioPlayer?.Stop();
+            _estaReproduciendo = false;
+            _timerProgreso?.Stop();
+            materialFloatingActionButton1.Icon = Reproductor.WinForm.Properties.Resources.play;
+
+            // Eliminar y ajustar índice
+            _listaReproduccion.RemoveAt(indice);
+
+            // Si quedan canciones, reproducir la siguiente
+            if (_listaReproduccion.Count > 0)
+            {
+                if (_indiceActual >= _listaReproduccion.Count)
+                    _indiceActual = 0;
+
+                ReproducirIndice(_indiceActual);
+            }
+            else
+            {
+                _indiceActual = -1;
+                lblTitulo.Text = "Reproductor";
+                lblArtistaAlbum.Text = "Lista vacía";
+                CargarPortadaPorDefecto();
+            }
+        }
+        else
+        {
+            // Si no es la actual, simplemente eliminar
+            _listaReproduccion.RemoveAt(indice);
+
+            // Ajustar índice actual si es necesario
+            if (indice < _indiceActual)
+            {
+                _indiceActual--;
+            }
+        }
+
+        ActualizarListaReproduccion();
+    }
+
+    private void ReproducirSiguiente()
+    {
+        if (_listaReproduccion.Count == 0)
+            return;
+
+        _indiceActual++;
+
+        if (_indiceActual >= _listaReproduccion.Count)
+        {
+            _indiceActual = 0; // Volver al principio
+        }
+
+        ReproducirIndice(_indiceActual);
+    }
+
+    private void ReproducirAnterior()
+    {
+        if (_listaReproduccion.Count == 0)
+            return;
+
+        _indiceActual--;
+
+        if (_indiceActual < 0)
+        {
+            _indiceActual = _listaReproduccion.Count - 1; // Ir al final
+        }
+
+        ReproducirIndice(_indiceActual);
+    }
+
+    private void ReproducirIndice(int indice)
+    {
+        if (indice < 0 || indice >= _listaReproduccion.Count)
+            return;
+
+        _archivoActual = _listaReproduccion[indice];
+
+        // Restablecer labels mientras carga
+        lblTitulo.Text = "Cargando...";
+        lblArtistaAlbum.Text = "";
+
+        CargarArchivo(_archivoActual);
+
+        // Extraer y mostrar portada
+        ExtraerPortada(_archivoActual);
+
+        // Actualizar ListBox
+        ActualizarListaReproduccion();
     }
 
     private void ActualizarTiempoDisplay(int posicionActual)
@@ -156,11 +367,18 @@ public partial class Form1 : MaterialForm
     {
         using var ofd = new OpenFileDialog();
         ofd.Filter = "Archivos FLAC|*.flac|Todos los archivos|*.*";
-        ofd.Title = "Seleccionar archivo FLAC";
+        ofd.Title = "Seleccionar archivos FLAC";
+        ofd.Multiselect = true;
 
         if (ofd.ShowDialog() == DialogResult.OK)
         {
-            _archivoActual = ofd.FileName;
+            // Limpiar lista anterior y agregar nuevos archivos
+            _listaReproduccion.Clear();
+            _listaReproduccion.AddRange(ofd.FileNames);
+            _indiceActual = 0;
+
+            // Cargar el primer archivo
+            _archivoActual = _listaReproduccion[_indiceActual];
 
             // Restablecer labels mientras carga
             lblTitulo.Text = "Cargando...";
@@ -170,6 +388,9 @@ public partial class Form1 : MaterialForm
 
             // Extraer y mostrar portada
             ExtraerPortada(_archivoActual);
+
+            // Actualizar ListBox
+            ActualizarListaReproduccion();
         }
     }
 
@@ -265,6 +486,8 @@ public partial class Form1 : MaterialForm
         _audioPlayer?.Dispose();
         _timerProgreso?.Stop();
         _timerProgreso?.Dispose();
+        _timerShuffle?.Stop();
+        _timerShuffle?.Dispose();
         _toolTip?.Dispose();
         base.OnFormClosing(e);
     }
@@ -338,13 +561,13 @@ public partial class Form1 : MaterialForm
     // Next button
     private void pictureBox1_Click(object sender, EventArgs e)
     {
-        // Futura Implementacion.
+        ReproducirSiguiente();
     }
 
     // Previous button
     private void pictureBox2_Click(object sender, EventArgs e)
     {
-        // Futura Implementacion.
+        ReproducirAnterior();
     }
 
     // Forward +10 buttom
@@ -378,6 +601,97 @@ public partial class Form1 : MaterialForm
     private void lblTiempo_Click(object sender, EventArgs e)
     {
 
+    }
+
+    // Shuffle buttom
+    private void pictureBox6_Click_1(object sender, EventArgs e)
+    {
+        if (_listaReproduccion.Count <= 1)
+            return;
+
+        // Mostrar efecto visual de shuffle activado
+        pictureBox6.BackgroundImage = Reproductor.WinForm.Properties.Resources.shuffleON;
+
+        // Guardar la canción actual
+        string cancionActual = _listaReproduccion[_indiceActual];
+
+        // Mezclar la lista (excepto la canción actual si está reproduciendo)
+        Random rng = new Random();
+        int n = _listaReproduccion.Count;
+
+        // Crear una lista temporal sin la canción actual
+        var listaTemporal = _listaReproduccion.Where((x, i) => i != _indiceActual).ToList();
+
+        // Mezclar la lista temporal usando Fisher-Yates
+        for (int i = listaTemporal.Count - 1; i > 0; i--)
+        {
+            int j = rng.Next(i + 1);
+            (listaTemporal[i], listaTemporal[j]) = (listaTemporal[j], listaTemporal[i]);
+        }
+
+        // Reconstruir la lista con la canción actual al principio
+        _listaReproduccion.Clear();
+        _listaReproduccion.Add(cancionActual);
+        _listaReproduccion.AddRange(listaTemporal);
+        _indiceActual = 0;
+
+        ActualizarListaReproduccion();
+
+        // Iniciar timer para volver al icono original después de 1 segundo
+        _timerShuffle?.Stop();
+        _timerShuffle?.Start();
+    }
+
+    private void TimerShuffle_Tick(object? sender, EventArgs e)
+    {
+        // Volver al icono original
+        pictureBox6.BackgroundImage = Reproductor.WinForm.Properties.Resources.shuffle;
+        _timerShuffle?.Stop();
+    }
+
+    // Repeat buttom
+    private void pictureBox5_Click(object sender, EventArgs e)
+    {
+        _repetirCancion = !_repetirCancion;
+
+        // Cambiar icono segun estado
+        if (_repetirCancion)
+        {
+            pictureBox5.BackgroundImage = Reproductor.WinForm.Properties.Resources.repeatON;
+        }
+        else
+        {
+            pictureBox5.BackgroundImage = Reproductor.WinForm.Properties.Resources.repeat;
+        }
+    }
+
+    // Clean buttom
+    private void materialButton1_Click(object sender, EventArgs e)
+    {
+        if (_listaReproduccion.Count == 0)
+            return;
+
+        // Detener reproducción actual
+        _audioPlayer?.Stop();
+        _audioPlayer?.Dispose();
+        _audioPlayer = null;
+        _estaReproduciendo = false;
+        _timerProgreso?.Stop();
+
+        // Limpiar todo
+        _listaReproduccion.Clear();
+        _indiceActual = -1;
+        _archivoActual = null;
+
+        // Resetear interfaz
+        listaReproduccion.Items.Clear();
+        listaReproduccion.Visible = false;
+        lblTitulo.Text = "Reproductor";
+        lblArtistaAlbum.Text = "Lista vacía";
+        CargarPortadaPorDefecto();
+        materialProgressBar1.Value = 0;
+        ActualizarTiempoDisplay(0);
+        materialFloatingActionButton1.Icon = Reproductor.WinForm.Properties.Resources.play;
     }
 }
 

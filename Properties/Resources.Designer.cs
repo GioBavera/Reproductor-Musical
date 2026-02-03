@@ -129,5 +129,37 @@ namespace Reproductor.WinForm.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        internal static System.Drawing.Bitmap shuffle
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("shuffle", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        internal static System.Drawing.Bitmap repeat
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("repeat", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        internal static System.Drawing.Bitmap shuffleON
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("shuffleON", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        internal static System.Drawing.Bitmap repeatON
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("repeatON", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
